@@ -135,7 +135,21 @@ class ExtCalendar extends cal.provider.BaseClass {
   }
 
   canRefresh = true;
-  capabilities = {};
+
+  get capabilities() {
+    if (!this._capabilities) {
+      try {
+        this._capabilities = JSON.parse(super.getProperty("extensionCapabilities"));
+      } catch (e) {}
+      if (!this._capabilities) {
+        this._capabilities = this.extension.manifest.calendar_provider.capabilities || {};
+      }
+    }
+    return this._capabilities;
+  }
+  set capabilities(val) {
+    this._capabilities = val;
+  }
 
   get id() {
     return super.id;
@@ -143,12 +157,6 @@ class ExtCalendar extends cal.provider.BaseClass {
   set id(val) {
     super.id = val;
     if (this.id && this.uri) {
-      try {
-        this.capabilities = JSON.parse(super.getProperty("extensionCapabilities"));
-      } catch (e) {
-        this.capabilities = this.extension.manifest.calendar_provider.capabilities || {};
-      }
-
       this.extension.emit("calendar.provider.onInit", this);
     }
   }
